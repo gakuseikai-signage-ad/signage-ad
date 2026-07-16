@@ -26,7 +26,7 @@ echo $XDG_SESSION_TYPE
 @xset s off
 @xset -dpms
 @xset s noblank
-@chromium-browser --noerrdialogs --disable-infobars --kiosk https://<デプロイ後のVercel URL>/display
+@chromium-browser --noerrdialogs --disable-infobars --kiosk https://signage-ad.vercel.app/display
 ```
 
 ### Wayland/labwcの場合
@@ -34,10 +34,8 @@ echo $XDG_SESSION_TYPE
 `~/.config/labwc/autostart` を作成/編集し、以下を追記:
 
 ```
-chromium-browser --noerrdialogs --disable-infobars --kiosk https://<デプロイ後のVercel URL>/display &
+chromium-browser --noerrdialogs --disable-infobars --kiosk https://signage-ad.vercel.app/display &
 ```
-
-`<デプロイ後のVercel URL>` は実際にVercelにデプロイしたドメインに置き換える。
 
 ## 3. 夜間・不在時間帯のディスプレイOFF
 
