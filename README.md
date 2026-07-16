@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# signage-ad
 
-## Getting Started
+学内デジタルサイネージの学生広告活用システム(MVP)。
+サークル・個人が動画を申請し、学生会が承認したものをラズパイ+ディスプレイでローテーション表示する。
 
-First, run the development server:
+## 構成
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- `/apply` — 申請フォーム(誰でもアクセス可)。動画アップロード時に30秒上限をブラウザ側で自動チェック
+- `/admin` — 管理画面(学生会メンバーのみ、Google OAuthでログイン)。承認/却下、同時掲示10件+待機キュー
+- `/display` — 表示クライアント(ラズパイのChromiumキオスクモードで開く)。承認済み動画をローテーション再生
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## セットアップ
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. 依存関係のインストール
+   ```
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. `.env.local.example` を `.env.local` にコピーし、値を埋める
+   - Supabaseプロジェクトを作成し、`supabase/schema.sql` をSQL Editorで実行(applicationsテーブル + videosバケットが作成される)
+   - Google Cloud ConsoleでOAuthクライアントIDを発行し、`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` に設定
+   - `NEXTAUTH_SECRET` は `openssl rand -base64 32` などで生成
+   - Resendでドメイン認証を行い、`RESEND_API_KEY` / `RESEND_FROM_EMAIL` を設定
 
-## Learn More
+3. ローカル起動
+   ```
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## デプロイ
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercelにデプロイし、環境変数を同様に設定する。ラズパイの表示クライアントはデプロイ後のURLの `/display` を開く
+(手順は [docs/raspberry-pi-setup.md](docs/raspberry-pi-setup.md) を参照)。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 運用ルール(MVP版)
 
-## Deploy on Vercel
+- 動画尺: 30秒上限
+- 同時掲示件数: 10件上限。超過分は先着順の待機キュー
+- 掲載基準: 誹謗中傷・政治宗教勧誘・外部企業の営利広告は不可(学生の小規模な創作物販売は許可)
+- 却下時は理由を選択式で記録し、申請者へ自動メール通知
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+詳細はObsidian Vault側の `Projects/signage-ad.md` を参照。
