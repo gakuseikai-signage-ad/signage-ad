@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { Application } from "@/lib/types";
@@ -32,18 +33,34 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-xl font-bold">サイネージ申請 管理画面</h1>
-        <form
-          action={async () => {
-            "use server";
-            await signOut();
-          }}
-        >
-          <button className="text-sm text-gray-500 underline" type="submit">
-            {session?.user?.email} をログアウト
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/apply"
+            target="_blank"
+            className="text-sm text-blue-700 underline"
+          >
+            申請フォームを開く
+          </Link>
+          <Link
+            href="/display"
+            target="_blank"
+            className="text-sm text-blue-700 underline"
+          >
+            表示画面を開く
+          </Link>
+          <form
+            action={async () => {
+              "use server";
+              await signOut();
+            }}
+          >
+            <button className="text-sm text-gray-500 underline" type="submit">
+              {session?.user?.email} をログアウト
+            </button>
+          </form>
+        </div>
       </div>
 
       <section className="mt-8">
