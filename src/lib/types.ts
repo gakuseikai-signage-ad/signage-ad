@@ -1,5 +1,6 @@
 export type ApplicationStatus = "pending" | "displaying" | "queued" | "rejected";
 export type ApplicantType = "group" | "individual";
+export type MediaType = "video" | "image";
 
 export interface Application {
   id: string;
@@ -8,6 +9,7 @@ export interface Application {
   applicant_type: ApplicantType;
   video_path: string;
   video_duration_seconds: number;
+  media_type: MediaType;
   status: ApplicationStatus;
   rejection_reason: string | null;
   display_order: number | null;

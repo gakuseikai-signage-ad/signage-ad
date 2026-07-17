@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 const MAX_VIDEO_DURATION_SECONDS = 30;
+const IMAGE_DISPLAY_SECONDS = 10;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 type SubmitState = "idle" | "submitting" | "done" | "error";
 
@@ -11,6 +13,7 @@ export default function ApplyPage() {
   const [applicantType, setApplicantType] = useState<"group" | "individual">("group");
   const [applicantEmail, setApplicantEmail] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [isImage, setIsImage] = useState(false);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [durationError, setDurationError] = useState<string | null>(null);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -19,10 +22,18 @@ export default function ApplyPage() {
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0] ?? null;
     setFile(null);
+    setIsImage(false);
     setVideoDuration(null);
     setDurationError(null);
 
     if (!selected) return;
+
+    if (ALLOWED_IMAGE_TYPES.includes(selected.type)) {
+      setIsImage(true);
+      setVideoDuration(IMAGE_DISPLAY_SECONDS);
+      setFile(selected);
+      return;
+    }
 
     const url = URL.createObjectURL(selected);
     const video = document.createElement("video");
@@ -43,7 +54,7 @@ export default function ApplyPage() {
     };
     video.onerror = () => {
       URL.revokeObjectURL(url);
-      setDurationError("動画ファイルを読み込めませんでした。別のファイルを試してください。");
+      setDurationError("ファイルを読み込めませんでした。別のファイルを試してください。");
     };
   }
 
@@ -94,7 +105,8 @@ export default function ApplyPage() {
     <main className="mx-auto max-w-lg p-8">
       <h1 className="text-xl font-bold">学内サイネージ掲示 申請フォーム</h1>
       <p className="mt-2 text-sm text-gray-600">
-        動画は{MAX_VIDEO_DURATION_SECONDS}秒以内にしてください。学生会が内容を確認したうえで掲示します。
+        動画は{MAX_VIDEO_DURATION_SECONDS}秒以内、画像は{IMAGE_DISPLAY_SECONDS}
+        秒間表示されます。学生会が内容を確認したうえで掲示します。
       </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
@@ -132,12 +144,21 @@ export default function ApplyPage() {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">掲示する動画</span>
-          <input required type="file" accept="video/*" onChange={handleFileChange} />
+          <span className="text-sm font-medium">掲示する動画・画像</span>
+          <input
+            required
+            type="file"
+            accept="video/*,image/jpeg,image/png,image/webp"
+            onChange={handleFileChange}
+          />
         </label>
 
         {videoDuration !== null && !durationError && (
-          <p className="text-sm text-green-700">動画の尺: {videoDuration.toFixed(1)}秒 (OK)</p>
+          <p className="text-sm text-green-700">
+            {isImage
+              ? `画像を選択しました(${IMAGE_DISPLAY_SECONDS}秒間表示されます)`
+              : `動画の尺: ${videoDuration.toFixed(1)}秒 (OK)`}
+          </p>
         )}
         {durationError && <p className="text-sm text-red-600">{durationError}</p>}
         {errorMessage && <p className="text-sm text-red-600">{errorMessage}</p>}

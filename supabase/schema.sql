@@ -6,6 +6,7 @@ create table if not exists applications (
   applicant_type text not null check (applicant_type in ('group', 'individual')),
   video_path text not null,
   video_duration_seconds numeric not null,
+  media_type text not null default 'video' check (media_type in ('video', 'image')),
   status text not null default 'pending' check (status in ('pending', 'displaying', 'queued', 'rejected')),
   rejection_reason text,
   display_order integer,
@@ -13,6 +14,9 @@ create table if not exists applications (
   reviewed_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+-- 既存環境向け: applicationsテーブル作成済みの場合にmedia_typeカラムを追加する
+alter table applications add column if not exists media_type text not null default 'video' check (media_type in ('video', 'image'));
 
 create index if not exists applications_status_idx on applications (status);
 create index if not exists applications_display_order_idx on applications (display_order);

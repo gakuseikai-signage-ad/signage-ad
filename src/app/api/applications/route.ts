@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 const MAX_VIDEO_DURATION_SECONDS = Number(process.env.MAX_VIDEO_DURATION_SECONDS ?? 30);
+const IMAGE_DISPLAY_SECONDS = 10;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -25,17 +27,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "申請種別が不正です。" }, { status: 400 });
   }
 
-  // ブラウザ側チェックの保険として、サーバー側でも尺の上限を検証する
-  if (!Number.isFinite(videoDurationSeconds) || videoDurationSeconds > MAX_VIDEO_DURATION_SECONDS) {
-    return NextResponse.json(
-      { error: `動画の尺は${MAX_VIDEO_DURATION_SECONDS}秒以内にしてください。` },
-      { status: 400 }
-    );
+  const isImage = ALLOWED_IMAGE_TYPES.includes(video.type);
+  const mediaType = isImage ? "image" : "video";
+
+  let durationSeconds = IMAGE_DISPLAY_SECONDS;
+  if (!isImage) {
+    // ブラウザ側チェックの保険として、サーバー側でも尺の上限を検証する
+    if (!Number.isFinite(videoDurationSeconds) || videoDurationSeconds > MAX_VIDEO_DURATION_SECONDS) {
+      return NextResponse.json(
+        { error: `動画の尺は${MAX_VIDEO_DURATION_SECONDS}秒以内にしてください。` },
+        { status: 400 }
+      );
+    }
+    durationSeconds = videoDurationSeconds;
   }
 
   const supabase = createServiceRoleClient();
 
-  const fileExt = video.name.split(".").pop() ?? "mp4";
+  const fileExt = video.name.split(".").pop() ?? (isImage ? "jpg" : "mp4");
   const videoPath = `${crypto.randomUUID()}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage
@@ -43,7 +52,7 @@ export async function POST(req: NextRequest) {
     .upload(videoPath, video, { contentType: video.type });
 
   if (uploadError) {
-    return NextResponse.json({ error: "動画のアップロードに失敗しました。" }, { status: 500 });
+    return NextResponse.json({ error: "ファイルのアップロードに失敗しました。" }, { status: 500 });
   }
 
   const { error: insertError } = await supabase.from("applications").insert({
@@ -51,7 +60,8 @@ export async function POST(req: NextRequest) {
     applicant_type: applicantType,
     applicant_email: applicantEmail,
     video_path: videoPath,
-    video_duration_seconds: videoDurationSeconds,
+    video_duration_seconds: durationSeconds,
+    media_type: mediaType,
     status: "pending",
   });
 

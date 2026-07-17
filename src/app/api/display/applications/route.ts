@@ -7,7 +7,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("applications")
-    .select("id, applicant_name, video_path, display_order")
+    .select("id, applicant_name, video_path, display_order, media_type, video_duration_seconds")
     .eq("status", "displaying")
     .order("display_order", { ascending: true });
 
@@ -26,6 +26,8 @@ export async function GET() {
     applicantName: a.applicant_name,
     videoUrl: supabase.storage.from("videos").getPublicUrl(a.video_path).data.publicUrl,
     order: a.display_order,
+    mediaType: a.media_type,
+    durationSeconds: a.video_duration_seconds,
   }));
 
   return NextResponse.json({ items, orientation: settings?.orientation ?? "landscape" });

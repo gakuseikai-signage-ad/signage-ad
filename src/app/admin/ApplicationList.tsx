@@ -57,17 +57,25 @@ export default function ApplicationList({
       {applications.map((app) => (
         <li key={app.id} className="rounded border p-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-            <video
-              src={app.videoUrl}
-              controls
-              className="w-full max-w-xs rounded bg-black"
-            />
+            {app.media_type === "image" ? (
+              <img
+                src={app.videoUrl}
+                alt={`${app.applicant_name}の申請画像`}
+                className="w-full max-w-xs rounded bg-black object-contain"
+              />
+            ) : (
+              <video src={app.videoUrl} controls className="w-full max-w-xs rounded bg-black" />
+            )}
             <div className="flex-1 text-sm">
               <p className="font-medium">
                 {app.applicant_name}({app.applicant_type === "group" ? "サークル・部活動" : "個人"})
               </p>
               <p className="text-gray-500">{app.applicant_email}</p>
-              <p className="text-gray-500">尺: {app.video_duration_seconds.toFixed(1)}秒</p>
+              <p className="text-gray-500">
+                {app.media_type === "image"
+                  ? `画像(${app.video_duration_seconds.toFixed(0)}秒間表示)`
+                  : `動画・尺: ${app.video_duration_seconds.toFixed(1)}秒`}
+              </p>
             </div>
           </div>
 
