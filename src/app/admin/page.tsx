@@ -2,6 +2,7 @@ import { auth, signOut } from "@/auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { Application } from "@/lib/types";
 import ApplicationList from "./ApplicationList";
+import DisplayingList from "./DisplayingList";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -46,15 +47,7 @@ export default async function AdminPage() {
         <h2 className="text-lg font-semibold">
           表示中 ({displaying.length}件 / 上限{process.env.MAX_DISPLAY_SLOTS ?? 10}件)
         </h2>
-        <ul className="mt-2 text-sm text-gray-600">
-          {displaying
-            .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
-            .map((a) => (
-              <li key={a.id}>
-                #{a.display_order} {a.applicant_name}
-              </li>
-            ))}
-        </ul>
+        <DisplayingList applications={displaying} />
       </section>
 
       <section className="mt-10">
