@@ -13,6 +13,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 export default function DisplayClient() {
   const [items, setItems] = useState<DisplayItem[]>([]);
+  const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -25,6 +26,7 @@ export default function DisplayClient() {
         const body = await res.json();
         if (!cancelled) {
           setItems(body.items ?? []);
+          setOrientation(body.orientation === "portrait" ? "portrait" : "landscape");
         }
       } catch {
         // ネットワーク不調時は次回ポーリングまで現状のリストで再生を継続
@@ -60,7 +62,7 @@ export default function DisplayClient() {
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-black">
+    <div className="relative h-screen w-screen overflow-hidden bg-black">
       <video
         key={current.id}
         ref={videoRef}
@@ -69,7 +71,11 @@ export default function DisplayClient() {
         muted
         playsInline
         onEnded={handleEnded}
-        className="h-full w-full object-contain"
+        className={
+          orientation === "portrait"
+            ? "absolute left-1/2 top-1/2 h-[100vw] w-[100vh] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover"
+            : "h-full w-full object-contain"
+        }
       />
     </div>
   );

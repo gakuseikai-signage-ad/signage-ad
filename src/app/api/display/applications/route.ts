@@ -15,6 +15,12 @@ export async function GET() {
     return NextResponse.json({ error: "取得に失敗しました。" }, { status: 500 });
   }
 
+  const { data: settings } = await supabase
+    .from("display_settings")
+    .select("orientation")
+    .eq("id", 1)
+    .maybeSingle();
+
   const items = (data ?? []).map((a) => ({
     id: a.id,
     applicantName: a.applicant_name,
@@ -22,5 +28,5 @@ export async function GET() {
     order: a.display_order,
   }));
 
-  return NextResponse.json({ items });
+  return NextResponse.json({ items, orientation: settings?.orientation ?? "landscape" });
 }

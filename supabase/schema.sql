@@ -21,3 +21,15 @@ create index if not exists applications_display_order_idx on applications (displ
 insert into storage.buckets (id, name, public)
 values ('videos', 'videos', true)
 on conflict (id) do nothing;
+
+-- 表示設定(ディスプレイの向き)。常に id=1 の1行のみを更新して使う。
+create table if not exists display_settings (
+  id integer primary key default 1,
+  orientation text not null default 'landscape' check (orientation in ('landscape', 'portrait')),
+  updated_at timestamptz not null default now(),
+  constraint display_settings_single_row check (id = 1)
+);
+
+insert into display_settings (id, orientation)
+values (1, 'landscape')
+on conflict (id) do nothing;

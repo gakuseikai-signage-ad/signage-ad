@@ -3,6 +3,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { Application } from "@/lib/types";
 import ApplicationList from "./ApplicationList";
 import DisplayingList from "./DisplayingList";
+import OrientationToggle from "./OrientationToggle";
 
 export default async function AdminPage() {
   const session = await auth();
@@ -12,6 +13,13 @@ export default async function AdminPage() {
     .from("applications")
     .select("*")
     .order("created_at", { ascending: true });
+
+  const { data: settings } = await supabase
+    .from("display_settings")
+    .select("orientation")
+    .eq("id", 1)
+    .maybeSingle();
+  const orientation = (settings?.orientation ?? "landscape") as "landscape" | "portrait";
 
   const all = (applications ?? []) as Application[];
   const withVideoUrl = all.map((a) => ({
@@ -37,6 +45,11 @@ export default async function AdminPage() {
           </button>
         </form>
       </div>
+
+      <section className="mt-8">
+        <h2 className="text-lg font-semibold">表示の向き</h2>
+        <OrientationToggle orientation={orientation} />
+      </section>
 
       <section className="mt-8">
         <h2 className="text-lg font-semibold">未対応の申請 ({pending.length}件)</h2>
