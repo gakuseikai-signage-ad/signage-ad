@@ -74,7 +74,7 @@ export default function DisplayClient() {
 
   const mediaClassName =
     orientation === "portrait"
-      ? "absolute left-1/2 top-1/2 h-[100vw] w-[100vh] -translate-x-1/2 -translate-y-1/2 rotate-90 object-cover"
+      ? "absolute left-1/2 top-1/2 h-[100vw] w-[100vh] -translate-x-1/2 -translate-y-1/2 rotate-90 object-contain"
       : "h-full w-full object-contain";
 
   return (
