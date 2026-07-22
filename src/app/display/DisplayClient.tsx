@@ -12,6 +12,8 @@ interface DisplayItem {
 }
 
 const POLL_INTERVAL_MS = 60_000;
+const DAILY_RELOAD_HOUR = 8; // 消灯明け(8時点灯)のタイミングで再読み込みし、コード更新を反映する
+const LAST_RELOAD_DATE_KEY = "display-last-reload-date";
 
 export default function DisplayClient() {
   const [items, setItems] = useState<DisplayItem[]>([]);
@@ -41,6 +43,23 @@ export default function DisplayClient() {
       cancelled = true;
       clearInterval(interval);
     };
+  }, []);
+
+  useEffect(() => {
+    // キオスクのブラウザは起動時に読み込んだJSを使い続けるため、デプロイした修正が
+    // 反映されない。消灯明けの毎朝1回リロードして最新のコードを取り込む。
+    function checkDailyReload() {
+      const now = new Date();
+      const todayKey = now.toISOString().slice(0, 10);
+      if (now.getHours() === DAILY_RELOAD_HOUR && sessionStorage.getItem(LAST_RELOAD_DATE_KEY) !== todayKey) {
+        sessionStorage.setItem(LAST_RELOAD_DATE_KEY, todayKey);
+        location.reload();
+      }
+    }
+
+    checkDailyReload();
+    const interval = setInterval(checkDailyReload, POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
   }, []);
 
   const safeIndex = items.length === 0 ? 0 : currentIndex % items.length;
