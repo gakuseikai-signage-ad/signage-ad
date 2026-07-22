@@ -113,7 +113,7 @@ export default function ApplyPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">申請種別</span>
           <select
-            className="rounded border px-3 py-2"
+            className="rounded border border-gray-300 bg-white px-3 py-2 text-gray-900"
             value={applicantType}
             onChange={(e) => setApplicantType(e.target.value as "group" | "individual")}
           >
@@ -126,7 +126,7 @@ export default function ApplyPage() {
           <span className="text-sm font-medium">団体名 / お名前</span>
           <input
             required
-            className="rounded border px-3 py-2"
+            className="rounded border border-gray-300 bg-white px-3 py-2 text-gray-900"
             value={applicantName}
             onChange={(e) => setApplicantName(e.target.value)}
           />
@@ -137,7 +137,7 @@ export default function ApplyPage() {
           <input
             required
             type="email"
-            className="rounded border px-3 py-2"
+            className="rounded border border-gray-300 bg-white px-3 py-2 text-gray-900"
             value={applicantEmail}
             onChange={(e) => setApplicantEmail(e.target.value)}
           />
