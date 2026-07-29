@@ -110,6 +110,12 @@ export default function ApplyPage() {
         動画は{MAX_VIDEO_DURATION_SECONDS}秒以内、画像は{IMAGE_DISPLAY_SECONDS}
         秒間表示されます。学生会が内容を確認したうえで掲示します。
       </p>
+      <p className="mt-2 text-sm text-gray-600">
+        誹謗中傷・政治宗教の勧誘・外部企業の商業広告は掲載できません。学生自身の小規模な創作物販売(同人誌即売会・ハンドメイド作品等)の告知は可能です。
+      </p>
+      <p className="mt-2 text-sm text-gray-600">
+        学生会がサイネージを使用する必要がある場合、事前のご連絡なく一時的に表示が切り替わることがあります。あらかじめご了承ください。
+      </p>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-1">
