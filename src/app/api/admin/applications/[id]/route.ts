@@ -60,7 +60,11 @@ export async function DELETE(
 
       await supabase
         .from("applications")
-        .update({ status: "displaying", display_order: nextOrder })
+        .update({
+          status: "displaying",
+          display_order: nextOrder,
+          displaying_started_at: new Date().toISOString(),
+        })
         .eq("id", nextInQueue.id);
     }
   }

@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
   const applicantName = formData.get("applicant_name");
   const applicantType = formData.get("applicant_type");
   const applicantEmail = formData.get("applicant_email");
+  const requestedDisplayDays = Number(formData.get("requested_display_days"));
   const videoDurationSeconds = Number(formData.get("video_duration_seconds"));
   const video = formData.get("video");
 
@@ -44,6 +45,10 @@ export async function POST(req: NextRequest) {
 
   if (applicantType !== "group" && applicantType !== "individual") {
     return NextResponse.json({ error: "申請種別が不正です。" }, { status: 400 });
+  }
+
+  if (!Number.isInteger(requestedDisplayDays) || requestedDisplayDays < 1 || requestedDisplayDays > 90) {
+    return NextResponse.json({ error: "掲載希望期間が不正です。" }, { status: 400 });
   }
 
   const declaredIsImage = ALLOWED_IMAGE_TYPES.includes(video.type);
@@ -95,6 +100,7 @@ export async function POST(req: NextRequest) {
     video_path: videoPath,
     video_duration_seconds: durationSeconds,
     media_type: mediaType,
+    requested_display_days: requestedDisplayDays,
     status: "pending",
   });
 

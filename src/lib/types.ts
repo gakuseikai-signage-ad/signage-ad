@@ -1,4 +1,4 @@
-export type ApplicationStatus = "pending" | "displaying" | "queued" | "rejected";
+export type ApplicationStatus = "pending" | "displaying" | "queued" | "rejected" | "expired";
 export type ApplicantType = "group" | "individual";
 export type MediaType = "video" | "image";
 
@@ -15,5 +15,7 @@ export interface Application {
   display_order: number | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  requested_display_days: number;
+  displaying_started_at: string | null;
   created_at: string;
 }

@@ -42,6 +42,7 @@ export async function POST(
         display_order: nextOrder,
         reviewed_by: session.user.email,
         reviewed_at: new Date().toISOString(),
+        displaying_started_at: new Date().toISOString(),
       })
       .eq("id", id);
 

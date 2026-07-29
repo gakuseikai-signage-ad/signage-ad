@@ -12,6 +12,7 @@ export default function ApplyPage() {
   const [applicantName, setApplicantName] = useState("");
   const [applicantType, setApplicantType] = useState<"group" | "individual">("group");
   const [applicantEmail, setApplicantEmail] = useState("");
+  const [requestedDisplayDays, setRequestedDisplayDays] = useState(14);
   const [file, setFile] = useState<File | null>(null);
   const [isImage, setIsImage] = useState(false);
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
@@ -70,6 +71,7 @@ export default function ApplyPage() {
       formData.append("applicant_name", applicantName);
       formData.append("applicant_type", applicantType);
       formData.append("applicant_email", applicantEmail);
+      formData.append("requested_display_days", String(requestedDisplayDays));
       formData.append("video_duration_seconds", String(videoDuration ?? 0));
       formData.append("video", file);
 
@@ -141,6 +143,24 @@ export default function ApplyPage() {
             value={applicantEmail}
             onChange={(e) => setApplicantEmail(e.target.value)}
           />
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium">掲載希望期間</span>
+          <select
+            className="rounded border border-gray-300 bg-white px-3 py-2 text-gray-900"
+            value={requestedDisplayDays}
+            onChange={(e) => setRequestedDisplayDays(Number(e.target.value))}
+          >
+            <option value={7}>1週間</option>
+            <option value={14}>2週間</option>
+            <option value={30}>1ヶ月</option>
+            <option value={60}>2ヶ月</option>
+            <option value={90}>3ヶ月</option>
+          </select>
+          <span className="text-xs text-gray-500">
+            表示開始日から起算した希望期間です。期間経過後は自動的に掲示を終了します。
+          </span>
         </label>
 
         <label className="flex flex-col gap-1">

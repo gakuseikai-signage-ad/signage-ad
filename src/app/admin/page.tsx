@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { expireOverdueApplications } from "@/lib/expireApplications";
 import { Application } from "@/lib/types";
 import ApplicationList from "./ApplicationList";
 import DisplayingList from "./DisplayingList";
@@ -9,6 +10,8 @@ import OrientationToggle from "./OrientationToggle";
 export default async function AdminPage() {
   const session = await auth();
   const supabase = createServiceRoleClient();
+
+  await expireOverdueApplications(supabase);
 
   const { data: applications } = await supabase
     .from("applications")
@@ -30,6 +33,7 @@ export default async function AdminPage() {
   const pending = withVideoUrl.filter((a) => a.status === "pending");
   const displaying = withVideoUrl.filter((a) => a.status === "displaying");
   const queued = withVideoUrl.filter((a) => a.status === "queued");
+  const expired = withVideoUrl.filter((a) => a.status === "expired");
 
   return (
     <main className="mx-auto max-w-3xl p-8">
@@ -87,6 +91,14 @@ export default async function AdminPage() {
             <li key={a.id}>{a.applicant_name}</li>
           ))}
         </ul>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold">期限切れ ({expired.length}件)</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          希望掲載期間を過ぎて自動的に掲示を終了した申請です。内容を確認のうえ削除してください。
+        </p>
+        <DisplayingList applications={expired} emptyMessage="期限切れの申請はありません。" />
       </section>
     </main>
   );

@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { expireOverdueApplications } from "@/lib/expireApplications";
 
 // ラズパイの表示クライアントが定期的に叩く公開エンドポイント。認証不要。
+// 60秒毎のポーリングに相乗りして、掲載期間切れの自動expired移行もここで行う。
 export async function GET() {
   const supabase = createServiceRoleClient();
+
+  await expireOverdueApplications(supabase);
 
   const { data, error } = await supabase
     .from("applications")

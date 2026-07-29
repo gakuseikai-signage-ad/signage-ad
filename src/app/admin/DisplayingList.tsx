@@ -4,10 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Application } from "@/lib/types";
 
+function formatExpiryDate(displayingStartedAt: string, requestedDisplayDays: number) {
+  const deadline = new Date(
+    new Date(displayingStartedAt).getTime() + requestedDisplayDays * 24 * 60 * 60 * 1000
+  );
+  return deadline.toLocaleDateString("ja-JP");
+}
+
 export default function DisplayingList({
   applications,
+  emptyMessage = "表示中の申請はありません。",
 }: {
   applications: (Application & { videoUrl: string })[];
+  emptyMessage?: string;
 }) {
   const router = useRouter();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -29,7 +38,7 @@ export default function DisplayingList({
   }
 
   if (applications.length === 0) {
-    return <p className="mt-2 text-sm text-gray-500">表示中の申請はありません。</p>;
+    return <p className="mt-2 text-sm text-gray-500">{emptyMessage}</p>;
   }
 
   return (
@@ -50,7 +59,8 @@ export default function DisplayingList({
               )}
               <div className="flex-1 text-sm">
                 <p className="font-medium">
-                  #{app.display_order} {app.applicant_name}
+                  {app.display_order !== null && `#${app.display_order} `}
+                  {app.applicant_name}
                   ({app.applicant_type === "group" ? "サークル・部活動" : "個人"})
                 </p>
                 <p className="text-gray-500">{app.applicant_email}</p>
@@ -59,6 +69,13 @@ export default function DisplayingList({
                     ? `画像(${app.video_duration_seconds.toFixed(0)}秒間表示)`
                     : `動画・尺: ${app.video_duration_seconds.toFixed(1)}秒`}
                 </p>
+                {app.status === "displaying" && app.displaying_started_at && (
+                  <p className="text-gray-500">
+                    掲載開始: {new Date(app.displaying_started_at).toLocaleDateString("ja-JP")}
+                    ・終了予定: {formatExpiryDate(app.displaying_started_at, app.requested_display_days)}
+                    (希望期間 {app.requested_display_days}日)
+                  </p>
+                )}
               </div>
             </div>
 
