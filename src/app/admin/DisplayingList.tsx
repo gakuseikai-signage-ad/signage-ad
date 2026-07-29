@@ -20,6 +20,7 @@ export default function DisplayingList({
 }) {
   const router = useRouter();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [pendingSuspendId, setPendingSuspendId] = useState<string | null>(null);
   const [errorByApplication, setErrorByApplication] = useState<Record<string, string>>({});
 
   async function handleDelete(id: string, applicantName: string) {
@@ -34,6 +35,21 @@ export default function DisplayingList({
     } else {
       const body = await res.json().catch(() => ({}));
       setErrorByApplication((prev) => ({ ...prev, [id]: body.error ?? "削除に失敗しました。" }));
+    }
+  }
+
+  async function handleSuspend(id: string, applicantName: string) {
+    if (!window.confirm(`「${applicantName}」の掲示を取り下げます(データは残ります)。よろしいですか?`)) {
+      return;
+    }
+    setPendingSuspendId(id);
+    const res = await fetch(`/api/admin/applications/${id}/suspend`, { method: "POST" });
+    setPendingSuspendId(null);
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setErrorByApplication((prev) => ({ ...prev, [id]: body.error ?? "取り下げに失敗しました。" }));
     }
   }
 
@@ -87,6 +103,15 @@ export default function DisplayingList({
               >
                 ダウンロード
               </a>
+              {app.status === "displaying" && (
+                <button
+                  onClick={() => handleSuspend(app.id, app.applicant_name)}
+                  disabled={pendingSuspendId === app.id}
+                  className="rounded bg-yellow-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+                >
+                  取り下げ
+                </button>
+              )}
               <button
                 onClick={() => handleDelete(app.id, app.applicant_name)}
                 disabled={pendingDeleteId === app.id}
