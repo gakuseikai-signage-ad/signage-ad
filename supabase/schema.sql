@@ -14,6 +14,7 @@ create table if not exists applications (
   reviewed_at timestamptz,
   requested_display_days integer not null default 14 check (requested_display_days between 1 and 90),
   displaying_started_at timestamptz,
+  expired_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -21,6 +22,7 @@ create table if not exists applications (
 alter table applications add column if not exists media_type text not null default 'video' check (media_type in ('video', 'image'));
 alter table applications add column if not exists requested_display_days integer not null default 14 check (requested_display_days between 1 and 90);
 alter table applications add column if not exists displaying_started_at timestamptz;
+alter table applications add column if not exists expired_at timestamptz;
 alter table applications drop constraint if exists applications_status_check;
 alter table applications add constraint applications_status_check check (status in ('pending', 'displaying', 'queued', 'rejected', 'expired'));
 

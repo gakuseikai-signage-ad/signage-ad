@@ -17,5 +17,6 @@ export interface Application {
   reviewed_at: string | null;
   requested_display_days: number;
   displaying_started_at: string | null;
+  expired_at: string | null;
   created_at: string;
 }

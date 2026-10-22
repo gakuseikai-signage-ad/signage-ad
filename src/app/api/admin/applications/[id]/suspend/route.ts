@@ -20,7 +20,7 @@ export async function POST(
 
   const { error } = await supabase
     .from("applications")
-    .update({ status: "expired", display_order: null })
+    .update({ status: "expired", display_order: null, expired_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", "displaying");
 

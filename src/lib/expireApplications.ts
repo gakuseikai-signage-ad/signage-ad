@@ -1,4 +1,5 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { getDeadline } from "@/lib/expiry";
 
 type SupabaseServiceClient = ReturnType<typeof createServiceRoleClient>;
 
@@ -15,21 +16,19 @@ export async function expireOverdueApplications(supabase: SupabaseServiceClient)
     .eq("status", "displaying");
 
   const now = Date.now();
-  const overdueIds = (displaying ?? [])
-    .filter((a) => {
-      if (!a.displaying_started_at) return false;
-      const deadline =
-        new Date(a.displaying_started_at).getTime() +
-        a.requested_display_days * 24 * 60 * 60 * 1000;
-      return deadline <= now;
-    })
-    .map((a) => a.id);
+  const overdue = (displaying ?? []).flatMap((a) => {
+    if (!a.displaying_started_at) return [];
+    const deadline = getDeadline(a.displaying_started_at, a.requested_display_days);
+    return deadline.getTime() <= now ? [{ id: a.id, deadline }] : [];
+  });
 
-  if (overdueIds.length > 0) {
+  // 検知は次回ポーリング時になるため、expired_atには検知時刻ではなく本来の期限を記録する
+  for (const o of overdue) {
     await supabase
       .from("applications")
-      .update({ status: "expired", display_order: null })
-      .in("id", overdueIds);
+      .update({ status: "expired", display_order: null, expired_at: o.deadline.toISOString() })
+      .eq("id", o.id)
+      .eq("status", "displaying");
   }
 
   const { count } = await supabase

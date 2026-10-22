@@ -3,13 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Application } from "@/lib/types";
-
-function formatExpiryDate(displayingStartedAt: string, requestedDisplayDays: number) {
-  const deadline = new Date(
-    new Date(displayingStartedAt).getTime() + requestedDisplayDays * 24 * 60 * 60 * 1000
-  );
-  return deadline.toLocaleDateString("ja-JP");
-}
+import { formatDate, getDeadline, getExpiredAt } from "@/lib/expiry";
 
 export default function DisplayingList({
   applications,
@@ -21,6 +15,7 @@ export default function DisplayingList({
   const router = useRouter();
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [pendingSuspendId, setPendingSuspendId] = useState<string | null>(null);
+  const [pendingRestoreId, setPendingRestoreId] = useState<string | null>(null);
   const [errorByApplication, setErrorByApplication] = useState<Record<string, string>>({});
 
   async function handleDelete(id: string, applicantName: string) {
@@ -50,6 +45,22 @@ export default function DisplayingList({
     } else {
       const body = await res.json().catch(() => ({}));
       setErrorByApplication((prev) => ({ ...prev, [id]: body.error ?? "取り下げに失敗しました。" }));
+    }
+  }
+
+  async function handleRestore(id: string, target: "displaying" | "queued") {
+    setPendingRestoreId(id);
+    const res = await fetch(`/api/admin/applications/${id}/restore`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ target }),
+    });
+    setPendingRestoreId(null);
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setErrorByApplication((prev) => ({ ...prev, [id]: body.error ?? "戻す処理に失敗しました。" }));
     }
   }
 
@@ -87,8 +98,19 @@ export default function DisplayingList({
                 </p>
                 {app.status === "displaying" && app.displaying_started_at && (
                   <p className="text-gray-500">
-                    掲載開始: {new Date(app.displaying_started_at).toLocaleDateString("ja-JP")}
-                    ・終了予定: {formatExpiryDate(app.displaying_started_at, app.requested_display_days)}
+                    掲載開始: {formatDate(new Date(app.displaying_started_at))}
+                    ・終了予定: {formatDate(getDeadline(app.displaying_started_at, app.requested_display_days))}
+                    (希望期間 {app.requested_display_days}日)
+                  </p>
+                )}
+                {app.status === "expired" && (
+                  <p className="text-gray-500">
+                    {app.displaying_started_at &&
+                      `掲載開始: ${formatDate(new Date(app.displaying_started_at))}・`}
+                    表示終了日: {(() => {
+                      const expiredAt = getExpiredAt(app);
+                      return expiredAt ? formatDate(expiredAt) : "不明";
+                    })()}
                     (希望期間 {app.requested_display_days}日)
                   </p>
                 )}
@@ -111,6 +133,24 @@ export default function DisplayingList({
                 >
                   取り下げ
                 </button>
+              )}
+              {app.status === "expired" && (
+                <>
+                  <button
+                    onClick={() => handleRestore(app.id, "displaying")}
+                    disabled={pendingRestoreId === app.id}
+                    className="rounded bg-green-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+                  >
+                    表示中に戻す
+                  </button>
+                  <button
+                    onClick={() => handleRestore(app.id, "queued")}
+                    disabled={pendingRestoreId === app.id}
+                    className="rounded bg-blue-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+                  >
+                    待機キューに戻す
+                  </button>
+                </>
               )}
               <button
                 onClick={() => handleDelete(app.id, app.applicant_name)}
